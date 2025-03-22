@@ -1,57 +1,104 @@
 import pygame
-import random
-import time
-import sys
 
 pygame.init()
 
-##Constants
+# Constants
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 LAKE_WIDTH = 400
 LAKE_HEIGHT = 300
+LINE_LENGTH = 30
 
-#our screen to display on
+# Screen setup
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-#variables such for our objects
-player = pygame.Rect((400,50,50,50))
-water = pygame.Rect((SCREEN_WIDTH/2-LAKE_WIDTH/2, SCREEN_HEIGHT/2-LAKE_HEIGHT/2, LAKE_WIDTH, LAKE_HEIGHT))
+# Player and lake objects
+player = pygame.Rect(400, 50, 50, 50)
+water = pygame.Rect((SCREEN_WIDTH/2 - LAKE_WIDTH/2, SCREEN_HEIGHT/2 - LAKE_HEIGHT/2, LAKE_WIDTH, LAKE_HEIGHT))
+direction = "east"
 
-#the loop the game runs in
+# Variables for the line
+line_start = player.center
+line_end = line_start
+
+# Game loop
 run = True
 while run:
-
     screen.fill("green")
 
-    #draws the lake and player on the screen
-    pygame.draw.rect(screen, (255,0,0), player)
-    pygame.draw.rect(screen, (55,55,255), water)
+    # Draw player and lake
+    pygame.draw.rect(screen, (255, 0, 0), player)
+    pygame.draw.rect(screen, (55, 55, 255), water)
 
-    # Store the old position
+    # Store old position
     old_x, old_y = player.x, player.y
 
-    #this is our key inputs
+    # Movement logic
     key = pygame.key.get_pressed()
     if key[pygame.K_LEFT]:
-        player.move_ip(-1,0)
+        player.move_ip(-1, 0)
+        direction = "west"
     elif key[pygame.K_RIGHT]:
-        player.move_ip(1,0)
-    if key[pygame.K_UP]:
-        player.move_ip(0,-1)
+        player.move_ip(1, 0)
+        direction = "east"
+    elif key[pygame.K_UP]:
+        player.move_ip(0, -1)
+        direction = "north"
     elif key[pygame.K_DOWN]:
-        player.move_ip(0,1)
+        player.move_ip(0, 1)
+        direction = "south"
 
-     # Collision detection and response
+    # Keep player inside the screen boundaries
+    if player.left < 0:
+        player.left = 0
+    if player.right > SCREEN_WIDTH:
+        player.right = SCREEN_WIDTH
+    if player.top < 0:
+        player.top = 0
+    if player.bottom > SCREEN_HEIGHT:
+        player.bottom = SCREEN_HEIGHT
+
+    # Collision with the lake
     if player.colliderect(water):
-        # Move back to previous position if colliding
         player.x, player.y = old_x, old_y
 
-    #allows you to close the aplication
+    # Line logic
+    if key[pygame.K_SPACE]:
+        # Set line start at the player center
+        line_start = player.center
+
+        # Calculate the line end based on direction
+        if direction == "east":
+            line_end = (line_start[0] + LINE_LENGTH, line_start[1])
+        elif direction == "west":
+            line_end = (line_start[0] - LINE_LENGTH, line_start[1])
+        elif direction == "north":
+            line_end = (line_start[0], line_start[1] - LINE_LENGTH)
+        elif direction == "south":
+            line_end = (line_start[0], line_start[1] + LINE_LENGTH)
+
+        # Check if the line is in the water
+        line_rect = pygame.Rect(min(line_start[0], line_end[0]),
+                                min(line_start[1], line_end[1]),
+                                abs(line_end[0] - line_start[0]),
+                                abs(line_end[1] - line_start[1]))
+
+        if line_rect.colliderect(water):
+            # Line stays extended
+            pygame.draw.line(screen, (0, 0, 0), line_start, line_end, 3)
+        else:
+            # Line retracts
+            line_end = line_start
+
+    # Draw the line
+    pygame.draw.line(screen, (0, 0, 0), line_start, line_end, 3)
+
+    # Event handling
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
+
     pygame.display.update()
 
-#ends the game
-pygame.quit() 
+# Quit the game
+pygame.quit()
