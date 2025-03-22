@@ -2,7 +2,7 @@ import pygame
 
 pygame.init()
 pygame.mixer.init(44100, -16, 2, 2048)
-pygame.mixer.music.load("fishing_music.wav")
+pygame.mixer.music.load("fishing_music.mp3")
 pygame.mixer.music.play(-1)
 # Constants
 SCREEN_WIDTH = 800
