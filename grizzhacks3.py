@@ -1,4 +1,7 @@
 import pygame
+import random
+import time
+import sys
 
 pygame.init()
 
@@ -25,6 +28,9 @@ while run:
     pygame.draw.rect(screen, (255,0,0), player)
     pygame.draw.rect(screen, (55,55,255), water)
 
+    # Store the old position
+    old_x, old_y = player.x, player.y
+
     #this is our key inputs
     key = pygame.key.get_pressed()
     if key[pygame.K_LEFT]:
@@ -35,6 +41,11 @@ while run:
         player.move_ip(0,-1)
     elif key[pygame.K_DOWN]:
         player.move_ip(0,1)
+
+     # Collision detection and response
+    if player.colliderect(water):
+        # Move back to previous position if colliding
+        player.x, player.y = old_x, old_y
 
     #allows you to close the aplication
     for event in pygame.event.get():
