@@ -11,7 +11,7 @@ pygame.mixer.music.play(-1)
 SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
 LAKE_WIDTH, LAKE_HEIGHT = 400, 300
 SPEED = 5  # Player movement speed
-WHITE, BLUE, BROWN, YELLOW, GRAY = (255, 255, 255), (55, 55, 255), (150, 75, 0), (255, 255, 0), (200, 200, 200)
+WHITE, BLUE, BROWN, YELLOW = (255, 255, 255), (55, 55, 255), (150, 75, 0), (255, 255, 0)
 
 # Screen setup
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -33,18 +33,18 @@ bite_time = 0
 waiting_for_bite = False
 random_bobber_pos = None  # Store random bobber position
 bobber_center = None  # Center point for spinning bobber
-fish_position = None  # Position where fish will appear
 
 # Game loop
 run = True
 while run:
-    screen.fill((0, 150, 0))
+
+    screen.fill((0,150,0))
 
     # Draw lake
     pygame.draw.rect(screen, BLUE, water)
 
     # Draw player
-    pygame.draw.rect(screen, (255, 0, 0), player)
+    pygame.draw.rect(screen, (255,0,0), player)
 
     # Check if player is near water
     near_water = player.colliderect(water.inflate(50, 50))
@@ -58,11 +58,11 @@ while run:
     # Fishing animation
     if fishing:
         # Draw fishing line
-        line_start = player.midbottom
+        line_start = (player.x+25, player.y+25)
         line_end = random_bobber_pos  # Set line end to random bobber position
         pygame.draw.line(screen, YELLOW, line_start, line_end, 3)
 
-        # Draw bobber (small brown circle)
+        # Draw bobber (small red circle)
         pygame.draw.circle(screen, BROWN, random_bobber_pos, 7)
 
         # Bobber spinning in a circle (5px radius)
@@ -75,21 +75,14 @@ while run:
         # Check for bite
         if waiting_for_bite and pygame.time.get_ticks() > bite_time:
             fishing_result = random.choice([True, False])  # 50% chance
-            if fishing_result:
-                fish_position = random_bobber_pos  # Store fish position at bobber
             fishing = False
             waiting_for_bite = False
 
-    # Draw fish if caught
+    # Fishing result message
     if fishing_result is not None:
         result_text = "You caught a fish!" if fishing_result else "Nothing bit this time..."
         text = font.render(result_text, True, WHITE)
         screen.blit(text, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100))
-
-        # Draw fish at the bobber's position
-        if fishing_result:
-            fish_rect = pygame.Rect(fish_position[0] - 15, fish_position[1] - 15, 30, 30)
-            pygame.draw.rect(screen, GRAY, fish_rect)  # Gray fish
 
     # Movement logic
     key = pygame.key.get_pressed()
@@ -114,14 +107,20 @@ while run:
     if key[pygame.K_SPACE] and near_water and not fishing and in_range:
         fishing = True
         fishing_result = None
+        bobber_x_offset = 0
+        bobber_y_offset = 0
         waiting_for_bite = True
         bite_time = pygame.time.get_ticks() + random.randint(2000, 4000)  # Random wait 2-4 sec
         
         # Randomize bobber position within the lake
-        random_bobber_pos = (
-            random.randint(water.left + 20, water.right - 20),
-            random.randint(water.top + 20, water.bottom - 20),
-        )
+        if player.centerx < water.centerx:  # Player is to the left of the lake
+            random_bobber_pos = (random.randint(water.left + 20, water.right - 20), random.randint(water.top + 20, water.bottom - 20))
+        elif player.centerx > water.centerx:  # Player is to the right of the lake
+            random_bobber_pos = (random.randint(water.left + 20, water.right - 20), random.randint(water.top + 20, water.bottom - 20))
+        elif player.centery < water.centery:  # Player is above the lake
+            random_bobber_pos = (random.randint(water.left + 20, water.right - 20), random.randint(water.top + 20, water.bottom - 20))
+        else:  # Player is below the lake
+            random_bobber_pos = (random.randint(water.left + 20, water.right - 20), random.randint(water.top + 20, water.bottom - 20))
 
         # Set the bobber center for spinning
         bobber_center = random_bobber_pos  # Store the center point to spin around
