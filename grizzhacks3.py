@@ -77,10 +77,11 @@
                 fishing_result = random.choice([True, False])  # 50% chance
                 fishing = False
                 waiting_for_bite = False
-
+        fish = pygame.Rect(SCREEN_WIDTH/2 -100, SCREEN_HEIGHT/2 -100, 200, 200)
         # Fishing result message
         if fishing_result is not None:
             result_text = "You caught a fish!" if fishing_result else "Nothing bit this time..."
+            fish = pygame.draw.rect(screen, (200,200,200), fish) if fishing_result else pygame.draw.rect(screen, (0,0,0), pygame.Rect(SCREEN_WIDTH/2 -100, SCREEN_HEIGHT/2 -100, 0, 0))
             text = font.render(result_text, True, WHITE)
             screen.blit(text, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100))
 
